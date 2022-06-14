@@ -1,10 +1,20 @@
 package main
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v9"
 )
+
+var ctx = context.Background()
+
+var rdb = redis.NewClient(&redis.Options{
+	Addr:     "127.0.0.1:6379",
+	Password: "PFoxMW0#z0aGlr6VNa%48wBA&&^MTn7r",
+})
 
 func main() {
 	// gin.SetMode(gin.ReleaseMode)
@@ -32,6 +42,16 @@ func main() {
 	router.GET("/user/groups", func(c *gin.Context) {
 		c.String(http.StatusOK, "The available groups are [...]")
 	})
+
+	// ############# redis test start #############
+	router.POST("/redis", func(c *gin.Context) {
+		err := rdb.Set(ctx, "hello", "world", time.Minute).Err()
+		if err != nil {
+			panic(err)
+		}
+	})
+	// ############# redis test end #############
+
 	router.Run()
 }
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,8 +17,8 @@ var rdb = redis.NewClient(&redis.Options{
 
 func main() {
 	// ############# Quick start #############
-	gin.SetMode(gin.ReleaseMode)
-	gin.DefaultWriter = ioutil.Discard
+	// gin.SetMode(gin.ReleaseMode)
+	// gin.DefaultWriter = ioutil.Discard
 	router := gin.Default()
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -50,7 +49,20 @@ func main() {
 	router.GET("/welcome", func(c *gin.Context) {
 		firstname := c.DefaultQuery("firstname", "Guest")
 		lastname := c.Query("lastname")
+
 		c.String(http.StatusOK, "Hello %s %s", firstname, lastname)
+	})
+
+	// ############# Multipart/Urlencoded Form #############
+	router.POST("/form_post", func(c *gin.Context) {
+		message := c.PostForm("message")
+		nick := c.DefaultPostForm("nick", "anonymous")
+
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "posted",
+			"message": message,
+			"nick":    nick,
+		})
 	})
 
 	// ############# Redis test #############

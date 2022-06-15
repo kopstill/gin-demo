@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"io/ioutil"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v9"
@@ -17,7 +17,8 @@ var rdb = redis.NewClient(&redis.Options{
 })
 
 func main() {
-	// gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.ReleaseMode)
+	gin.DefaultWriter = ioutil.Discard
 	router := gin.Default()
 	// r.GET("/ping", ping)
 	router.GET("/ping", func(c *gin.Context) {
@@ -45,14 +46,25 @@ func main() {
 
 	// ############# redis test start #############
 	router.POST("/redis", func(c *gin.Context) {
-		err := rdb.Set(ctx, "hello", "world", time.Minute).Err()
-		if err != nil {
-			panic(err)
+		var redisKVData redisKVData
+		if err := c.ShouldBindJSON(&redisKVData); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"bind error": err.Error()})
+			return
 		}
+		if err := rdb.Set(ctx, redisKVData.RKey, redisKVData.RValue, 0).Err(); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"redis error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"code": "0"})
 	})
 	// ############# redis test end #############
 
 	router.Run()
+}
+
+type redisKVData struct {
+	RKey   string `json:"rKey" binding:"required"`
+	RValue string `json:"rValue" binding:"required"`
 }
 
 // func ping(c *gin.Context) {

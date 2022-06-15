@@ -17,15 +17,17 @@ var rdb = redis.NewClient(&redis.Options{
 })
 
 func main() {
+	// ############# Quick start #############
 	gin.SetMode(gin.ReleaseMode)
 	gin.DefaultWriter = ioutil.Discard
 	router := gin.Default()
-	// r.GET("/ping", ping)
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
 		})
 	})
+
+	// ############# Parameters in path #############
 	router.GET("/user/:name", func(c *gin.Context) {
 		name := c.Param("name")
 		c.String(http.StatusOK, "Hello %s", name)
@@ -44,7 +46,14 @@ func main() {
 		c.String(http.StatusOK, "The available groups are [...]")
 	})
 
-	// ############# redis test start #############
+	// ############# Querystring parameters #############
+	router.GET("/welcome", func(c *gin.Context) {
+		firstname := c.DefaultQuery("firstname", "Guest")
+		lastname := c.Query("lastname")
+		c.String(http.StatusOK, "Hello %s %s", firstname, lastname)
+	})
+
+	// ############# Redis test #############
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData
 		if err := c.ShouldBindJSON(&redisKVData); err != nil {
@@ -57,7 +66,6 @@ func main() {
 		}
 		c.JSON(http.StatusOK, gin.H{"code": "0"})
 	})
-	// ############# redis test end #############
 
 	router.Run()
 }
@@ -66,9 +74,3 @@ type redisKVData struct {
 	RKey   string `json:"rKey" binding:"required"`
 	RValue string `json:"rValue" binding:"required"`
 }
-
-// func ping(c *gin.Context) {
-// 	c.JSON(http.StatusOK, gin.H{
-// 		"message": "pong",
-// 	})
-// }

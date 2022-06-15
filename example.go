@@ -74,6 +74,18 @@ func main() {
 		message := c.PostForm("message")
 
 		fmt.Printf("id: %s; page: %s; name: %s; message: %s\n", id, page, name, message)
+
+		c.String(http.StatusOK, "ok")
+	})
+
+	// ############# Map as querystring or postform parameters #############
+	router.POST("/post_map", func(c *gin.Context) {
+		ids := c.QueryMap("ids")
+		names := c.PostFormMap("names")
+
+		fmt.Printf("ids: %v; names: %v\n", ids, names)
+
+		c.String(http.StatusOK, "ok")
 	})
 
 	// ############# Redis test #############

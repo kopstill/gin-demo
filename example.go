@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v9"
 )
@@ -86,6 +88,23 @@ func main() {
 		fmt.Printf("ids: %v; names: %v\n", ids, names)
 
 		c.String(http.StatusOK, "ok")
+	})
+
+	// ############# Upload files #############
+	router.MaxMultipartMemory = 8 << 20 // 8M (default is 32M)
+	// Single file
+	router.POST("/upload", func(c *gin.Context) {
+		file, err := c.FormFile("file")
+		if err != nil {
+			c.String(http.StatusBadRequest, fmt.Sprintf("get form file err: %s", err.Error()))
+		} else {
+			filename := file.Filename
+			log.Println(filename)
+
+			c.SaveUploadedFile(file, "~")
+
+			c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", filename))
+		}
 	})
 
 	// ############# Redis test #############

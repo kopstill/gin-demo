@@ -128,6 +128,23 @@ func main() {
 		}
 	})
 
+	// ############# Grouping routes #############
+	// Simple group: v1
+	v1 := router.Group("/v1")
+	{
+		v1.POST("/login", nil)
+		v1.POST("/submit", nil)
+		v1.POST("/read", nil)
+	}
+
+	// Simple group: v2
+	v2 := router.Group("/v2")
+	{
+		v2.POST("/login", nil)
+		v2.POST("/submit", nil)
+		v2.POST("/read", nil)
+	}
+
 	// ############# Redis test #############
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData

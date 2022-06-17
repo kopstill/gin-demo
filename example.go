@@ -94,16 +94,37 @@ func main() {
 	router.MaxMultipartMemory = 8 << 20 // 8M (default is 32M)
 	// Single file
 	router.POST("/upload", func(c *gin.Context) {
-		file, err := c.FormFile("file")
+		file, err := c.FormFile("single-file")
 		if err != nil {
 			c.String(http.StatusBadRequest, fmt.Sprintf("get form file err: %s", err.Error()))
 		} else {
 			filename := file.Filename
 			log.Println(filename)
 
-			c.SaveUploadedFile(file, "~")
+			c.SaveUploadedFile(file, "/Users/kopever/Desktop/"+filename)
 
 			c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", filename))
+		}
+	})
+	// Multiple files
+	router.POST("/upload_multiple", func(c *gin.Context) {
+		form, err := c.MultipartForm()
+		if err != nil {
+			c.String(http.StatusBadRequest, fmt.Sprintf("get form files err: %s", err.Error()))
+		} else {
+			files := form.File["multiple-files"]
+			if len(files) == 0 {
+				c.String(http.StatusBadRequest, "no files received")
+			} else {
+				for _, file := range files {
+					filename := file.Filename
+					log.Println(filename)
+
+					c.SaveUploadedFile(file, "/Users/kopever/Desktop/"+filename)
+
+					c.String(http.StatusOK, fmt.Sprintf("%d files uploaded!", len(files)))
+				}
+			}
 		}
 	})
 

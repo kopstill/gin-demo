@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"log"
 
@@ -30,7 +31,24 @@ func main() {
 	f, _ := os.Create("/Users/kopever/Develop/logs/gin-demo/gin.log")
 	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
 
-	router := gin.Default()
+	// router := gin.Default()
+	router := gin.New()
+
+	// ############# Custom Log Format #############
+	router.Use(gin.LoggerWithFormatter(func(params gin.LogFormatterParams) string {
+		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+			params.ClientIP,
+			params.TimeStamp.Format(time.RFC1123),
+			params.Method,
+			params.Path,
+			params.Request.Proto,
+			params.StatusCode,
+			params.Latency,
+			params.Request.UserAgent(),
+			params.ErrorMessage,
+		)
+	}))
+
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "pong",
@@ -155,8 +173,8 @@ func main() {
 
 	// ############# Using middleware #############
 	authorized := router.Group("/")
-	authorized.Use(gin.Logger())
-	authorized.Use(gin.Recovery())
+	// authorized.Use(gin.Logger())
+	// authorized.Use(gin.Recovery())
 	authorized.Use(AuthRequired())
 	{
 		authorized.POST("/ping", ping())

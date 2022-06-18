@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 
 	"log"
 
@@ -22,6 +24,12 @@ func main() {
 	// ############# Quick start #############
 	// gin.SetMode(gin.ReleaseMode)
 	// gin.DefaultWriter = ioutil.Discard
+	// gin.DisableConsoleColor()
+
+	// ############# How to write log file #############
+	f, _ := os.Create("/Users/kopever/Develop/logs/gin-demo/gin.log")
+	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
+
 	router := gin.Default()
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

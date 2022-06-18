@@ -147,6 +147,8 @@ func main() {
 
 	// ############# Using middleware #############
 	authorized := router.Group("/")
+	authorized.Use(gin.Logger())
+	authorized.Use(gin.Recovery())
 	authorized.Use(AuthRequired())
 	{
 		authorized.POST("/ping", ping())
@@ -158,6 +160,20 @@ func main() {
 		// visit 0.0.0.0:8080/testing/analytics
 		testing.GET("/analytics", nil)
 	}
+
+	// ############# Custom Recovery behavior #############
+	router.Use(gin.CustomRecovery(func(c *gin.Context, recoverd interface{}) {
+		if err, ok := recoverd.(string); ok {
+			c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
+		}
+		c.AbortWithStatus(http.StatusInternalServerError)
+	}))
+	router.GET("/panic", func(ctx *gin.Context) {
+		panic("foo")
+	})
+	router.GET("/", func(ctx *gin.Context) {
+		ctx.String(http.StatusOK, "ohai")
+	})
 
 	// ############# Redis test #############
 	router.POST("/redis", func(c *gin.Context) {

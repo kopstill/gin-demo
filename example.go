@@ -26,6 +26,7 @@ func main() {
 	// gin.SetMode(gin.ReleaseMode)
 	// gin.DefaultWriter = ioutil.Discard
 	// gin.DisableConsoleColor()
+	gin.ForceConsoleColor()
 
 	// ############# How to write log file #############
 	f, _ := os.Create("/Users/kopever/Develop/logs/gin-demo/gin.log")

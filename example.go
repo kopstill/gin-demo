@@ -145,6 +145,20 @@ func main() {
 		v2.POST("/read", nil)
 	}
 
+	// ############# Using middleware #############
+	authorized := router.Group("/")
+	authorized.Use(AuthRequired())
+	{
+		authorized.POST("/ping", ping())
+		authorized.POST("/submit", nil)
+		authorized.POST("/read", nil)
+
+		// nested group
+		testing := authorized.Group("testing")
+		// visit 0.0.0.0:8080/testing/analytics
+		testing.GET("/analytics", nil)
+	}
+
 	// ############# Redis test #############
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData
@@ -160,6 +174,21 @@ func main() {
 	})
 
 	router.Run()
+}
+
+func ping() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.String(http.StatusOK, "Authed pong")
+	}
+}
+
+func AuthRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := c.Query("token")
+		if token != "okay" {
+			c.String(http.StatusUnauthorized, "Unauthorized")
+		}
+	}
 }
 
 type redisKVData struct {

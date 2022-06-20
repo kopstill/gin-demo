@@ -11,6 +11,8 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator"
 	"github.com/go-redis/redis/v9"
 )
 
@@ -32,8 +34,8 @@ func main() {
 	f, _ := os.Create("/Users/kopever/Develop/logs/gin-demo/gin.log")
 	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
 
-	// router := gin.Default()
-	router := gin.New()
+	router := gin.Default()
+	// router := gin.New()
 
 	// ############# Custom Log Format #############
 	router.Use(gin.LoggerWithFormatter(func(params gin.LogFormatterParams) string {
@@ -249,6 +251,12 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "you are logged in"})
 	})
 
+	// ############# Custom Validators #############
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("bookabledate", bookableDate)
+	}
+	router.GET("/bookable", getBookable)
+
 	// ############# Redis test #############
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData
@@ -266,10 +274,35 @@ func main() {
 	router.Run()
 }
 
+func getBookable(c *gin.Context) {
+	var b Book
+	if err := c.ShouldBindWith(&b, binding.Query); err == nil {
+		c.JSON(http.StatusOK, gin.H{"message": "Booking dates are valid!"})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+}
+
 // Binding from JSON
 type Login struct {
 	User     string `form:"user" json:"user" xml:"user" binding:"required"`
-	Password string `form:"password" json:"password" xml:"password" binding:"required"`
+	Password string `form:"password" json:"password" xml:"password" binding:"required"` // binding:"-"
+}
+
+type Book struct {
+	CheckIn  time.Time `form:"check_in" binding:"required,bookabledate" time_format:"2006-01-02"`
+	CheckOut time.Time `form:"check_out" binding:"required,gtfield=CheckIn" time_format:"2006-01-02"`
+}
+
+var bookableDate validator.Func = func(fl validator.FieldLevel) bool {
+	date, ok := fl.Field().Interface().(time.Time)
+	if ok {
+		today := time.Now()
+		if today.After(date) {
+			return false
+		}
+	}
+	return true
 }
 
 func ping() gin.HandlerFunc {

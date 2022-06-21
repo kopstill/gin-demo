@@ -260,6 +260,9 @@ func main() {
 	// ############# Only Bind Query String #############
 	router.Any("/testing", startPage)
 
+	// ############# Bind Query String or Post Data #############
+	router.Any("/testing1", startPage1)
+
 	// ############# Redis test #############
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData
@@ -287,8 +290,11 @@ func getBookable(c *gin.Context) {
 }
 
 type Person struct {
-	Name    string `form:"name"`
-	Address string `form:"address"`
+	Name       string    `form:"name"`
+	Address    string    `form:"address"`
+	Birthday   time.Time `form:"birthday" time_format:"2006-01-02" time_utc:"1"`
+	CreateTime time.Time `form:"createTime" time_format:"unixNano"`
+	UnixTime   time.Time `form:"unixTime" time_format:"unix"`
 }
 
 func startPage(c *gin.Context) {
@@ -300,6 +306,26 @@ func startPage(c *gin.Context) {
 
 		c.JSON(http.StatusOK, person)
 	} else {
+		c.String(http.StatusBadRequest, "invalid parameters")
+	}
+}
+
+func startPage1(c *gin.Context) {
+	var person Person
+	// If `GET`, only `Form` binding engine (`query`) used.
+	// If `POST`, first checks the `content-type` for `JSON` or `XML`, then uses `Form` (`form-data`).
+	// See more at https://github.com/gin-gonic/gin/blob/master/binding/binding.go#L88
+	err := c.ShouldBind(&person)
+	if err == nil {
+		log.Println(person.Name)
+		log.Println(person.Address)
+		log.Println(person.Birthday)
+		log.Println(person.CreateTime)
+		log.Println(person.UnixTime)
+
+		c.String(http.StatusOK, "Success")
+	} else {
+		log.Println(err)
 		c.String(http.StatusBadRequest, "invalid parameters")
 	}
 }

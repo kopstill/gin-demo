@@ -257,6 +257,9 @@ func main() {
 	}
 	router.GET("/bookable", getBookable)
 
+	// ############# Only Bind Query String #############
+	router.Any("/testing", startPage)
+
 	// ############# Redis test #############
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData
@@ -280,6 +283,24 @@ func getBookable(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "Booking dates are valid!"})
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+}
+
+type Person struct {
+	Name    string `form:"name"`
+	Address string `form:"address"`
+}
+
+func startPage(c *gin.Context) {
+	var person Person
+	if c.ShouldBindQuery(&person) == nil {
+		log.Println("====== Only Bind By Query String ======")
+		log.Println("Name:", person.Name)
+		log.Println("Address:", person.Address)
+
+		c.JSON(http.StatusOK, person)
+	} else {
+		c.String(http.StatusBadRequest, "invalid parameters")
 	}
 }
 

@@ -263,13 +263,25 @@ func main() {
 	// ############# Bind Query String or Post Data #############
 	router.Any("/testing1", startPage1)
 
+	// ############# Bind Uri #############
 	router.GET("/:name/:id", func(c *gin.Context) {
-		var people People
+		people := People{}
 		if err := c.ShouldBindUri(&people); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"msg": err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"name": people.Name, "uuid": people.ID})
+	})
+
+	// ############# Bind Header #############
+	router.GET("/bind_header", func(c *gin.Context) {
+		h := testHeader{}
+		if err := c.ShouldBindHeader(&h); err != nil {
+			c.JSON(http.StatusOK, err)
+		}
+
+		fmt.Printf("%#v\n", h)
+		c.JSON(http.StatusOK, gin.H{"Rate": h.Rate, "Domain": h.Domain})
 	})
 
 	// ############# Redis test #############
@@ -296,6 +308,11 @@ func getBookable(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
+}
+
+type testHeader struct {
+	Rate   string `header: Rate`
+	Domain string `header: Domain`
 }
 
 type People struct {

@@ -18,3 +18,18 @@ func checkboxPostHandler(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"color": checkboxForm.Colors})
 	}
 }
+
+func profileHandler(c *gin.Context) {
+	var profileForm profileForm
+	if err := c.ShouldBind(&profileForm); err != nil {
+		// if err := c.ShouldBindWith(&profileForm, binding.Form); err != nil {
+		c.String(http.StatusBadRequest, "bind error", err.Error())
+	} else {
+		err := c.SaveUploadedFile(profileForm.Avatar, "/Users/kopever/Develop/temp/gin-demo/"+profileForm.Name)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "save error", err.Error())
+		} else {
+			c.String(http.StatusOK, "ok")
+		}
+	}
+}

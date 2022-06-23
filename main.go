@@ -289,6 +289,9 @@ func main() {
 	router.GET("/bind_checkbox", checkboxGetHandler)
 	router.POST("/bind_checkbox", checkboxPostHandler)
 
+	// Multipart/Urlencoded binding
+	router.POST("/profile", profileHandler)
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData

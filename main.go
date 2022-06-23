@@ -24,20 +24,20 @@ var rdb = redis.NewClient(&redis.Options{
 })
 
 func main() {
-	// ############# Quick start #############
+	// Quick start
 	// gin.SetMode(gin.ReleaseMode)
 	// gin.DefaultWriter = ioutil.Discard
 	// gin.DisableConsoleColor()
 	gin.ForceConsoleColor()
 
-	// ############# How to write log file #############
+	// How to write log file
 	f, _ := os.Create("/Users/kopever/Develop/logs/gin-demo/gin.log")
 	gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
 
 	router := gin.Default()
 	// router := gin.New()
 
-	// ############# Custom Log Format #############
+	// Custom Log Format
 	router.Use(gin.LoggerWithFormatter(func(params gin.LogFormatterParams) string {
 		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
 			params.ClientIP,
@@ -58,7 +58,7 @@ func main() {
 		})
 	})
 
-	// ############# Parameters in path #############
+	// Parameters in path
 	router.GET("/user/:name", func(c *gin.Context) {
 		name := c.Param("name")
 		c.String(http.StatusOK, "Hello %s", name)
@@ -77,7 +77,7 @@ func main() {
 		c.String(http.StatusOK, "The available groups are [...]")
 	})
 
-	// ############# Querystring parameters #############
+	// Querystring parameters
 	router.GET("/welcome", func(c *gin.Context) {
 		firstname := c.DefaultQuery("firstname", "Guest")
 		lastname := c.Query("lastname")
@@ -85,7 +85,7 @@ func main() {
 		c.String(http.StatusOK, "Hello %s %s", firstname, lastname)
 	})
 
-	// ############# Multipart/Urlencoded Form #############
+	// Multipart/Urlencoded Form
 	router.POST("/form_post", func(c *gin.Context) {
 		message := c.PostForm("message")
 		nick := c.DefaultPostForm("nick", "anonymous")
@@ -97,7 +97,7 @@ func main() {
 		})
 	})
 
-	// ############# Another example: query + post form #############
+	// Another example: query + post form
 	router.POST("/post", func(c *gin.Context) {
 		id := c.Query("id")
 		page := c.DefaultQuery("page", "0")
@@ -109,7 +109,7 @@ func main() {
 		c.String(http.StatusOK, "ok")
 	})
 
-	// ############# Map as querystring or postform parameters #############
+	// Map as querystring or postform parameters
 	router.POST("/post_map", func(c *gin.Context) {
 		ids := c.QueryMap("ids")
 		names := c.PostFormMap("names")
@@ -119,7 +119,7 @@ func main() {
 		c.String(http.StatusOK, "ok")
 	})
 
-	// ############# Upload files #############
+	// Upload files
 	router.MaxMultipartMemory = 8 << 20 // 8M (default is 32M)
 	// Single file
 	router.POST("/upload", func(c *gin.Context) {
@@ -157,7 +157,7 @@ func main() {
 		}
 	})
 
-	// ############# Grouping routes #############
+	// Grouping routes
 	// Simple group: v1
 	v1 := router.Group("/v1")
 	{
@@ -174,7 +174,7 @@ func main() {
 		v2.POST("/read", nil)
 	}
 
-	// ############# Using middleware #############
+	// Using middleware
 	authorized := router.Group("/")
 	// authorized.Use(gin.Logger())
 	// authorized.Use(gin.Recovery())
@@ -190,7 +190,7 @@ func main() {
 		testing.GET("/analytics", nil)
 	}
 
-	// ############# Custom Recovery behavior #############
+	// Custom Recovery behavior
 	router.Use(gin.CustomRecovery(func(c *gin.Context, recoverd interface{}) {
 		if err, ok := recoverd.(string); ok {
 			c.String(http.StatusInternalServerError, fmt.Sprintf("error: %s", err))
@@ -204,7 +204,7 @@ func main() {
 		ctx.String(http.StatusOK, "ohai")
 	})
 
-	// ############# Model binding and validation #############
+	// Model binding and validation
 	router.POST("/loginJSON", func(c *gin.Context) {
 		var json Login
 		if err := c.ShouldBindJSON(&json); err != nil {
@@ -251,19 +251,19 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "you are logged in"})
 	})
 
-	// ############# Custom Validators #############
+	// Custom Validators
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("bookabledate", bookableDate)
 	}
 	router.GET("/bookable", getBookable)
 
-	// ############# Only Bind Query String #############
+	// Only Bind Query String
 	router.Any("/testing", startPage)
 
-	// ############# Bind Query String or Post Data #############
+	// Bind Query String or Post Data
 	router.Any("/testing1", startPage1)
 
-	// ############# Bind Uri #############
+	// Bind Uri
 	router.GET("/:name/:id", func(c *gin.Context) {
 		people := People{}
 		if err := c.ShouldBindUri(&people); err != nil {
@@ -273,7 +273,7 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"name": people.Name, "uuid": people.ID})
 	})
 
-	// ############# Bind Header #############
+	// Bind Header
 	router.GET("/bind_header", func(c *gin.Context) {
 		h := testHeader{}
 		if err := c.ShouldBindHeader(&h); err != nil {
@@ -284,7 +284,12 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"Rate": h.Rate, "Domain": h.Domain})
 	})
 
-	// ############# Redis test #############
+	// Bind HTML checkboxes
+	router.LoadHTMLFiles("checkbox.html")
+	router.GET("/bind_checkbox", checkboxGetHandler)
+	router.POST("/bind_checkbox", checkboxPostHandler)
+
+	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData
 		if err := c.ShouldBindJSON(&redisKVData); err != nil {
@@ -311,8 +316,8 @@ func getBookable(c *gin.Context) {
 }
 
 type testHeader struct {
-	Rate   string `header: Rate`
-	Domain string `header: Domain`
+	Rate   string `header:"Rate"`
+	Domain string `header:"Domain"`
 }
 
 type People struct {

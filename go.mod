@@ -1,4 +1,4 @@
-module kopever/timeline
+module kopever/gin-demo
 
 go 1.18
 

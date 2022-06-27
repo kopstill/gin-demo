@@ -368,6 +368,15 @@ func main() {
 	router.StaticFile("/favicon.ico", "./resources/favicon.svg")
 	router.StaticFileFS("/more_favicon.ico", "ok.png", http.Dir("my_file_system"))
 
+	// Serving data from file
+	router.GET("/local/file", func(c *gin.Context) {
+		c.File("local/hello.go")
+	})
+	var fs http.FileSystem = http.Dir(".")
+	router.GET("/fs/file", func(c *gin.Context) {
+		c.FileFromFS("local/world.go", fs)
+	})
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData

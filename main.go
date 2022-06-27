@@ -341,6 +341,15 @@ func main() {
 		// curl http://127.0.0.1:8080/JSONP?callback=x
 	})
 
+	// AsciiJSON
+	router.GET("/someJSONAscii", func(c *gin.Context) {
+		data := gin.H{
+			"lang": "GO 语言",
+			"tag":  "<br>",
+		}
+		c.AsciiJSON(http.StatusOK, data)
+	})
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData

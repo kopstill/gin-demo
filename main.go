@@ -325,6 +325,13 @@ func main() {
 		c.ProtoBuf(http.StatusOK, data)
 	})
 
+	// SecureJSON
+	// router.SecureJsonPrefix(")]}',\n")
+	router.GET("/someJSONSecure", func(c *gin.Context) {
+		names := []string{"lena", "austin", "foo"}
+		c.SecureJSON(http.StatusOK, names)
+	})
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData

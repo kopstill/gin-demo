@@ -350,6 +350,18 @@ func main() {
 		c.AsciiJSON(http.StatusOK, data)
 	})
 
+	// PureJSON
+	router.GET("/json", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"html": "<b>Hello, world!</b>",
+		})
+	})
+	router.GET("/purejson", func(c *gin.Context) {
+		c.PureJSON(http.StatusOK, gin.H{
+			"html": "<b>Hello, world!</b>",
+		})
+	})
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData

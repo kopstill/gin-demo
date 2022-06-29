@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"html/template"
 	"io"
 	"net/http"
 	"os"
@@ -418,6 +419,20 @@ func main() {
 		})
 	})
 
+	// Custom Template renderer
+	html := template.Must(template.ParseFiles("templates/template1.tmpl", "templates/template2.tmpl"))
+	router.SetHTMLTemplate(html)
+	router.Delims("{[{", "}]}")
+	router.SetFuncMap(template.FuncMap{
+		"formatAsDate": formatAsDate,
+	})
+	router.LoadHTMLFiles("testdata/template/raw.tmpl")
+	router.GET("/raw", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "raw.tmpl", gin.H{
+			"now": time.Date(2017, 07, 01, 0, 0, 0, 0, time.UTC),
+		})
+	})
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData
@@ -433,6 +448,11 @@ func main() {
 	})
 
 	router.Run()
+}
+
+func formatAsDate(t time.Time) string {
+	year, month, day := t.Date()
+	return fmt.Sprintf("%d/%02d/%02d", year, month, day)
 }
 
 func getBookable(c *gin.Context) {

@@ -402,6 +402,8 @@ func main() {
 	// router.LoadHTMLFiles("templates/template1.html", "templates/template2.html")
 	// router.LoadHTMLFiles("templates/index.tmpl")
 	router.LoadHTMLGlob("templates/*.tmpl")
+	tmpl := template.Must(template.ParseFiles("templates/index.tmpl"))
+	router.SetHTMLTemplate(tmpl)
 	router.GET("/index", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
 			"title": "Main website",
@@ -422,15 +424,35 @@ func main() {
 	// Custom Template renderer
 	html := template.Must(template.ParseFiles("templates/template1.tmpl", "templates/template2.tmpl"))
 	router.SetHTMLTemplate(html)
+	// Custom Delimiters
 	router.Delims("{[{", "}]}")
 	router.SetFuncMap(template.FuncMap{
 		"formatAsDate": formatAsDate,
 	})
+	// Custom Template Funcs
 	router.LoadHTMLFiles("testdata/template/raw.tmpl")
 	router.GET("/raw", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "raw.tmpl", gin.H{
 			"now": time.Date(2017, 07, 01, 0, 0, 0, 0, time.UTC),
 		})
+	})
+
+	// Multitemplate
+	// Redirects
+	router.GET("/test", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "http://www.google.com/")
+	})
+	// Redirect from POST
+	router.POST("/testPost", func(c *gin.Context) {
+		c.Redirect(http.StatusFound, "/foo")
+	})
+	// Router redirect
+	router.GET("/test1", func(c *gin.Context) {
+		c.Request.URL.Path = "/test2"
+		router.HandleContext(c)
+	})
+	router.GET("/test2", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"hello": "world"})
 	})
 
 	// Redis test

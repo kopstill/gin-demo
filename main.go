@@ -478,6 +478,22 @@ func main() {
 		}
 	})
 
+	// Goroutines inside a middleware
+	router.GET("/long_async", func(c *gin.Context) {
+		cCp := c.Copy()
+
+		go func() {
+			time.Sleep(3 * time.Second)
+			log.Println("Done! in path " + cCp.Request.URL.Path)
+		}()
+
+		c.String(http.StatusOK, "Done!")
+	})
+	router.GET("/long_sync", func(c *gin.Context) {
+		time.Sleep(3 * time.Second)
+		log.Println("Done! in path " + c.Request.URL.Path)
+	})
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData
@@ -504,6 +520,7 @@ var secrets = gin.H{
 func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t := time.Now()
+		log.Println("start:", t)
 		c.Set("example", "12138")
 		c.Next()
 		latency := time.Since(t)

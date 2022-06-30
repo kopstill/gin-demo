@@ -3,9 +3,11 @@ module kopever/gin-demo
 go 1.18
 
 require (
+	github.com/gin-gonic/autotls v0.0.3
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-redis/redis/v9 v9.0.0-beta.1
+	google.golang.org/protobuf v1.28.0
 )
 
 require (
@@ -26,6 +28,5 @@ require (
 	golang.org/x/net v0.0.0-20220607020251-c690dde0001d // indirect
 	golang.org/x/sys v0.0.0-20220610221304-9f5ed59c137d // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

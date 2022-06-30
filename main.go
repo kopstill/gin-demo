@@ -494,6 +494,18 @@ func main() {
 		log.Println("Done! in path " + c.Request.URL.Path)
 	})
 
+	// Support Let's Encrypt
+	// router.GET("/tls", func(c *gin.Context) {
+	// 	c.String(http.StatusOK, "Support Let's Encrypt")
+	// })
+	// manager := autocert.Manager{
+	// 	Prompt:     autocert.AcceptTOS,
+	// 	HostPolicy: autocert.HostWhitelist("example1.com", "example2.com"),
+	// 	Cache:      autocert.DirCache("/var/www/.cache"),
+	// }
+	// log.Fatal(autotls.Run(router, "example1.com", "example2.com"))
+	// log.Fatal(autotls.RunWithManager(router, &manager))
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData

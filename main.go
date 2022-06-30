@@ -402,8 +402,8 @@ func main() {
 	// router.LoadHTMLFiles("templates/template1.html", "templates/template2.html")
 	// router.LoadHTMLFiles("templates/index.tmpl")
 	router.LoadHTMLGlob("templates/*.tmpl")
-	tmpl := template.Must(template.ParseFiles("templates/index.tmpl"))
-	router.SetHTMLTemplate(tmpl)
+	// tmpl := template.Must(template.ParseFiles("templates/index.tmpl"))
+	// router.SetHTMLTemplate(tmpl)
 	router.GET("/index", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl", gin.H{
 			"title": "Main website",
@@ -508,7 +508,16 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"code": "0"})
 	})
 
-	router.Run()
+	// router.Run()
+	// Custom HTTP configuration
+	s := &http.Server{
+		Addr:           ":8080",
+		Handler:        router,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+	s.ListenAndServe()
 }
 
 var secrets = gin.H{

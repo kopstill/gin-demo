@@ -455,6 +455,13 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"hello": "world"})
 	})
 
+	// Custom Middleware
+	router.Use(Logger())
+	router.GET("/customMiddleware", func(c *gin.Context) {
+		example := c.MustGet("example").(string)
+		log.Print(example)
+	})
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData
@@ -470,6 +477,18 @@ func main() {
 	})
 
 	router.Run()
+}
+
+func Logger() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		t := time.Now()
+		c.Set("example", "12138")
+		c.Next()
+		latency := time.Since(t)
+		log.Println("takes:", latency)
+		status := c.Writer.Status()
+		log.Println("response status:", status)
+	}
 }
 
 func formatAsDate(t time.Time) string {

@@ -412,7 +412,8 @@ func main() {
 			"title": "Main website",
 		})
 	})
-	router.LoadHTMLGlob("templates/**/*")
+	// router.LoadHTMLGlob("templates/**/*")
+	router.LoadHTMLFiles("templates/posts/index.tmpl", "templates/users/index.tmpl")
 	router.GET("/posts/index", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "posts/index.tmpl", gin.H{
 			"title": "Posts",

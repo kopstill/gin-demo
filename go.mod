@@ -6,7 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-redis/redis/v9 v9.0.0-beta.1
-	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
+	github.com/jessevdk/go-assets v0.0.0-20160921144138-4f4301a06e15
 	google.golang.org/protobuf v1.28.0
 )
 

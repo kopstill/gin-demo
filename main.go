@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"log"
@@ -15,7 +18,6 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v9"
-	"golang.org/x/sync/errgroup"
 
 	"kopever/gin-demo/testdata/protoexample"
 )
@@ -546,38 +548,78 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	g.Go(func() error {
-		err := server8080.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			log.Fatal(err)
-		}
-		return err
-	})
+	// g.Go(func() error {
+	// 	err := server8080.ListenAndServe()
+	// 	if err != nil && err != http.ErrServerClosed {
+	// 		log.Fatal(err)
+	// 	}
+	// 	return err
+	// })
 
-	g.Go(func() error {
-		err := server8081.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			log.Fatal(err)
-		}
-		return err
-	})
+	// g.Go(func() error {
+	// 	err := server8081.ListenAndServe()
+	// 	if err != nil && err != http.ErrServerClosed {
+	// 		log.Fatal(err)
+	// 	}
+	// 	return err
+	// })
 
-	g.Go(func() error {
-		err := server8082.ListenAndServe()
-		if err != nil && err != http.ErrServerClosed {
-			log.Fatal(err)
-		}
-		return err
-	})
+	// g.Go(func() error {
+	// 	err := server8082.ListenAndServe()
+	// 	if err != nil && err != http.ErrServerClosed {
+	// 		log.Fatal(err)
+	// 	}
+	// 	return err
+	// })
 
-	if err := g.Wait(); err != nil {
-		log.Fatal(err)
+	// if err := g.Wait(); err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	go func() {
+		if err := server8080.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
+			log.Printf("[Server:8080] %s\n", err)
+		}
+	}()
+
+	go func() {
+		if err := server8081.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
+			log.Printf("[Server:8081] %s\n", err)
+		}
+	}()
+
+	go func() {
+		if err := server8082.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
+			log.Printf("[Server:8082] %s\n", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1024)
+
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	x := <-quit
+	log.Printf("Quit channel: %s\n", x)
+	log.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server8080.Shutdown(ctx); err != nil {
+		log.Fatal("Server 8080 forced to shutdown:", err)
 	}
+	if err := server8081.Shutdown(ctx); err != nil {
+		log.Fatal("Server 8081 forced to shutdown:", err)
+	}
+	if err := server8082.Shutdown(ctx); err != nil {
+		log.Fatal("Server 8082 forced to shutdown:", err)
+	}
+
+	log.Println("Server exiting")
 }
 
-var (
-	g errgroup.Group
-)
+// var (
+// 	g errgroup.Group
+// )
 
 func router8081() http.Handler {
 	e := gin.Default()

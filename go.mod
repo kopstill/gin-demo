@@ -3,10 +3,10 @@ module kopever/gin-demo
 go 1.18
 
 require (
-	github.com/gin-gonic/autotls v0.0.3
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-redis/redis/v9 v9.0.0-beta.1
+	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 	google.golang.org/protobuf v1.28.0
 )
 

@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/go-redis/redis/v9"
+	"golang.org/x/sync/errgroup"
 
 	"kopever/gin-demo/testdata/protoexample"
 )
@@ -492,6 +493,7 @@ func main() {
 	router.GET("/long_sync", func(c *gin.Context) {
 		time.Sleep(3 * time.Second)
 		log.Println("Done! in path " + c.Request.URL.Path)
+		c.String(http.StatusOK, "Done!")
 	})
 
 	// Support Let's Encrypt
@@ -522,14 +524,85 @@ func main() {
 
 	// router.Run()
 	// Custom HTTP configuration
-	s := &http.Server{
+	server8080 := &http.Server{
 		Addr:           ":8080",
 		Handler:        router,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	s.ListenAndServe()
+
+	server8081 := &http.Server{
+		Addr:         ":8081",
+		Handler:      router8081(),
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
+	server8082 := &http.Server{
+		Addr:         ":8082",
+		Handler:      router8082(),
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
+	g.Go(func() error {
+		err := server8080.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+		return err
+	})
+
+	g.Go(func() error {
+		err := server8081.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+		return err
+	})
+
+	g.Go(func() error {
+		err := server8082.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+var (
+	g errgroup.Group
+)
+
+func router8081() http.Handler {
+	e := gin.Default()
+	e.Use(gin.Recovery())
+	e.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"message": "Welcome server 01",
+		})
+	})
+
+	return e
+}
+
+func router8082() http.Handler {
+	e := gin.Default()
+	e.Use(gin.Recovery())
+	e.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"message": "Welcome server 02",
+		})
+	})
+
+	return e
 }
 
 var secrets = gin.H{

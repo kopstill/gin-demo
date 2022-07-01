@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func build_main() {
+func BuildMain() {
 	r := gin.New()
 
 	t, err := loadTemplate()

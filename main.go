@@ -577,6 +577,33 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 
+	router.GET("/getb", func(c *gin.Context) {
+		var b StructB
+		c.Bind(&b)
+		c.JSON(http.StatusOK, gin.H{
+			"a": b.NestedStruct,
+			"b": b.FieldB,
+		})
+	})
+
+	router.GET("/getc", func(c *gin.Context) {
+		var sc StructC
+		c.Bind(&sc)
+		c.JSON(http.StatusOK, gin.H{
+			"a": sc.NestedStructPointer,
+			"c": sc.FieldC,
+		})
+	})
+
+	router.GET("/getd", func(c *gin.Context) {
+		var d StructD
+		c.Bind(&d)
+		c.JSON(http.StatusOK, gin.H{
+			"x": d.NestedAnonyStruct,
+			"d": d.FieldD,
+		})
+	})
+
 	go func() {
 		if err := server8080.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
 			log.Printf("[Server:8080] %s\n", err)
@@ -616,6 +643,27 @@ func main() {
 	}
 
 	log.Println("Server exiting")
+}
+
+type StructA struct {
+	FieldA string `form:"field_a"`
+}
+
+type StructB struct {
+	NestedStruct StructA
+	FieldB       string `form:"field_b"`
+}
+
+type StructC struct {
+	NestedStructPointer *StructA
+	FieldC              string `form:"field_c"`
+}
+
+type StructD struct {
+	NestedAnonyStruct struct {
+		FieldX string `form:"field_x"`
+	}
+	FieldD string `form:"field_d"`
 }
 
 // var (

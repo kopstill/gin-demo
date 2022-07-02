@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Build a single binary with templates
 func BuildMain() {
 	r := gin.New()
 

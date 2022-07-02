@@ -511,6 +511,58 @@ func main() {
 	// log.Fatal(autotls.Run(router, "example1.com", "example2.com"))
 	// log.Fatal(autotls.RunWithManager(router, &manager))
 
+	// Bind form-data request with custom struct
+	router.GET("/getb", func(c *gin.Context) {
+		var b StructB
+		c.Bind(&b)
+		c.JSON(http.StatusOK, gin.H{
+			"a": b.NestedStruct,
+			"b": b.FieldB,
+		})
+	})
+
+	router.GET("/getc", func(c *gin.Context) {
+		var sc StructC
+		c.Bind(&sc)
+		c.JSON(http.StatusOK, gin.H{
+			"a": sc.NestedStructPointer,
+			"c": sc.FieldC,
+		})
+	})
+
+	router.GET("/getd", func(c *gin.Context) {
+		var d StructD
+		c.Bind(&d)
+		c.JSON(http.StatusOK, gin.H{
+			"x": d.NestedAnonyStruct,
+			"d": d.FieldD,
+		})
+	})
+
+	// Try to bind body into different structs
+	router.POST("/bindDiffStructs", func(c *gin.Context) {
+		objA := formA{}
+		objB := formB{}
+
+		// if errA := c.ShouldBind(&objA); errA == nil {
+		// 	c.String(http.StatusOK, "the body should be formA")
+		// } else if errB := c.ShouldBind(&objB); errB == nil {
+		// 	c.String(http.StatusOK, "the body should be formB")
+		// } else {
+		// 	c.String(http.StatusOK, "unknown body")
+		// }
+
+		if errA := c.ShouldBindWith(&objA, binding.Form); errA == nil {
+			c.String(http.StatusOK, `the body should be formA Form`)
+		} else if errB := c.ShouldBindBodyWith(&objB, binding.JSON); errB == nil {
+			c.String(http.StatusOK, `the body should be formB JSON`)
+		} else if errB2 := c.ShouldBindBodyWith(&objB, binding.XML); errB2 == nil {
+			c.String(http.StatusOK, `the body should be formB XML`)
+		} else {
+			c.String(http.StatusOK, "unknown body")
+		}
+	})
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData
@@ -549,6 +601,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
+	// Run multiple service using Gin
 	// g.Go(func() error {
 	// 	err := server8080.ListenAndServe()
 	// 	if err != nil && err != http.ErrServerClosed {
@@ -577,33 +630,6 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 
-	router.GET("/getb", func(c *gin.Context) {
-		var b StructB
-		c.Bind(&b)
-		c.JSON(http.StatusOK, gin.H{
-			"a": b.NestedStruct,
-			"b": b.FieldB,
-		})
-	})
-
-	router.GET("/getc", func(c *gin.Context) {
-		var sc StructC
-		c.Bind(&sc)
-		c.JSON(http.StatusOK, gin.H{
-			"a": sc.NestedStructPointer,
-			"c": sc.FieldC,
-		})
-	})
-
-	router.GET("/getd", func(c *gin.Context) {
-		var d StructD
-		c.Bind(&d)
-		c.JSON(http.StatusOK, gin.H{
-			"x": d.NestedAnonyStruct,
-			"d": d.FieldD,
-		})
-	})
-
 	go func() {
 		if err := server8080.ListenAndServe(); err != nil && errors.Is(err, http.ErrServerClosed) {
 			log.Printf("[Server:8080] %s\n", err)
@@ -622,6 +648,7 @@ func main() {
 		}
 	}()
 
+	// Graceful shutdown or restart
 	quit := make(chan os.Signal, 1024)
 
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -643,6 +670,14 @@ func main() {
 	}
 
 	log.Println("Server exiting")
+}
+
+type formA struct {
+	Foo string `json:"foo" xml:"foo" binding:"required"`
+}
+
+type formB struct {
+	Bar string `json:"bar" xml:"bar" binding:"required"`
 }
 
 type StructA struct {

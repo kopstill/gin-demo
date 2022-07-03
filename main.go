@@ -563,6 +563,19 @@ func main() {
 		}
 	})
 
+	// Bind form-data request with custom struct and custom tag
+	router.POST("/bindCustom", func(c *gin.Context) {
+		var urlBinding = customerBinding{}
+		var opt FormA
+		err := c.MustBindWith(&opt, urlBinding)
+		log.Print("opt: " + opt.FieldA)
+		if err != nil {
+			c.String(http.StatusBadRequest, "binding error")
+		} else {
+			c.String(http.StatusOK, "okay")
+		}
+	})
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData
@@ -670,6 +683,43 @@ func main() {
 	}
 
 	log.Println("Server exiting")
+}
+
+const (
+	customerTag   = "url"
+	defaultMemory = 32 << 20
+)
+
+type customerBinding struct{}
+
+func (customerBinding) Name() string {
+	return "form"
+}
+
+func (customerBinding) Bind(req *http.Request, obj interface{}) error {
+	if err := req.ParseForm(); err != nil {
+		return err
+	}
+	if err := req.ParseMultipartForm(defaultMemory); err != nil {
+		if err != http.ErrNotMultipart {
+			return err
+		}
+	}
+	if err := binding.MapFormWithTag(obj, req.Form, customerTag); err != nil {
+		return err
+	}
+	return validate(obj)
+}
+
+func validate(obj interface{}) error {
+	if binding.Validator == nil {
+		return nil
+	}
+	return binding.Validator.ValidateStruct(obj)
+}
+
+type FormA struct {
+	FieldA string `url:"field_a"`
 }
 
 type formA struct {

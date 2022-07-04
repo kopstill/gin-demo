@@ -576,6 +576,20 @@ func main() {
 		}
 	})
 
+	// http2 server push
+	// router.Static("/assets", "./assets")
+	router.SetHTMLTemplate(html1)
+	router.GET("/http2ServerPush", func(c *gin.Context) {
+		if pusher := c.Writer.Pusher(); pusher != nil {
+			if err := pusher.Push("/assets/app.js", nil); err != nil {
+				log.Printf("Failed to push: %v", err)
+			}
+		}
+		c.HTML(http.StatusOK, "http2", gin.H{
+			"status": "success",
+		})
+	})
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData
@@ -684,6 +698,18 @@ func main() {
 
 	log.Println("Server exiting")
 }
+
+var html1 = template.Must(template.New("http2").Parse(`
+<html>
+<head>
+  <title>Https Test</title>
+  <script src="/assets/app.js"></script>
+</head>
+<body>
+  <h1 style="color:red;">Welcome, Ginner!</h1>
+</body>
+</html>
+`))
 
 const (
 	customerTag   = "url"

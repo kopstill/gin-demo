@@ -595,6 +595,17 @@ func main() {
 		log.Printf("endpoint %v %v %v %v\n", httpMethod, absolutePath, handlerName, nuHandlers)
 	}
 
+	// Set and get a cookie
+	router.GET("/cookie", func(c *gin.Context) {
+		cookie, err := c.Cookie("gin_cookie")
+		if err != nil {
+			cookie = "NotSet"
+			c.SetCookie("gin_cookie", "test", 3600, "/", "localhost", false, true)
+		}
+		fmt.Printf("Cookie value: %s \n", cookie)
+		c.String(http.StatusOK, cookie)
+	})
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData

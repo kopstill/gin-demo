@@ -606,6 +606,16 @@ func main() {
 		c.String(http.StatusOK, cookie)
 	})
 
+	// Don't trust all proxies
+	// router.SetTrustedProxies([]string{"192.168.1.2"})
+	// router.SetTrustedProxies([]string{"192.168.1.157"})
+	// router.TrustedPlatform = gin.PlatformGoogleAppEngine
+	router.TrustedPlatform = "X-CDN-IP"
+	router.GET("/setTrustedProxies", func(c *gin.Context) {
+		fmt.Println("Client IP:", c.ClientIP())
+		fmt.Println("Remote IP:", c.RemoteIP())
+	})
+
 	// Redis test
 	router.POST("/redis", func(c *gin.Context) {
 		var redisKVData redisKVData

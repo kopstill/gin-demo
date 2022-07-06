@@ -958,3 +958,11 @@ type redisKVData struct {
 	RKey   string `json:"rKey" binding:"required"`
 	RValue string `json:"rValue" binding:"required"`
 }
+
+func setupRouter() *gin.Engine {
+	r := gin.Default()
+	r.GET("/", func(ctx *gin.Context) {
+		ctx.String(http.StatusOK, "Hiya!")
+	})
+	return r
+}
